@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ertyz</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: Georgia, serif; background: #0a0a0a; color: #e8e8e8; min-height: 100vh; }
+    header { padding: 2rem; border-bottom: 1px solid #222; display: flex; justify-content: space-between; align-items: center; }
+    .logo { font-size: 2rem; font-weight: bold; letter-spacing: 0.1em; color: #fff; }
+    .date { color: #666; font-size: 0.9rem; }
+    main { max-width: 800px; margin: 0 auto; padding: 3rem 2rem; }
+    h1 { font-size: 2.5rem; line-height: 1.2; margin-bottom: 1rem; color: #fff; }
+    .intro { font-size: 1.2rem; color: #aaa; margin-bottom: 2.5rem; line-height: 1.7; border-left: 3px solid #444; padding-left: 1rem; }
+    .article { font-size: 1rem; line-height: 1.9; color: #ccc; margin-bottom: 3rem; }
+    .article p { margin-bottom: 1.2rem; }
+    .callout { background: #111; border: 1px solid #222; border-radius: 8px; padding: 2rem; margin-bottom: 2rem; }
+    .label { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.2em; color: #555; margin-bottom: 0.5rem; }
+    .quote { font-size: 1.2rem; font-style: italic; color: #aaa; }
+    footer { text-align: center; padding: 2rem; color: #333; font-size: 0.8rem; border-top: 1px solid #111; }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="logo">ertyz</div>
+    <div class="date" id="date"></div>
+  </header>
+  <main id="main">Loading...</main>
+  <footer>Generated daily by Claude AI &mdash; <span id="ts"></span></footer>
+  <script>
+    fetch('content/daily.json')
+      .then(r => r.json())
+      .then(d => {
+        document.getElementById('date').textContent = d.date;
+        document.getElementById('ts').textContent = new Date(d.timestamp).toLocaleString();
+        const paragraphs = d.article.split('\n\n').filter(p => p.trim()).map(p => `<p>${p}</p>`).join('');
+        document.getElementById('main').innerHTML = `
+          <h1>${d.headline}</h1>
+          <div class="intro">${d.intro}</div>
+          <div class="article">${paragraphs}</div>
+          <div class="callout">
+            <div class="label">Quote of the Day</div>
+            <div class="quote">"${d.quote}"</div>
+          </div>
+          <div class="callout">
+            <div class="label">Today's Fact</div>
+            <p>${d.fact}</p>
+          </div>`;
+      });
+  </script>
+</body>
+</html>
