@@ -2,7 +2,7 @@ name: Daily Content Generation
 
 on:
   schedule:
-    - cron: '0 14 * * *'
+    - cron: '0 2 * * *'
   workflow_dispatch:
 
 jobs:
