@@ -4,49 +4,498 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>ertyz</title>
+  <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Syne:wght@400;700;800&display=swap" rel="stylesheet">
   <style>
+    :root {
+      --bg: #030407;
+      --surface: #080c14;
+      --border: #0d1f35;
+      --accent: #00ffe0;
+      --accent2: #ff2d6b;
+      --text: #c8d8e8;
+      --muted: #3a5068;
+      --mono: 'Share Tech Mono', monospace;
+      --sans: 'Syne', sans-serif;
+    }
+
     * { margin: 0; padding: 0; box-sizing: border-box; }
-    body { font-family: Georgia, serif; background: #0a0a0a; color: #e8e8e8; min-height: 100vh; }
-    header { padding: 2rem; border-bottom: 1px solid #222; display: flex; justify-content: space-between; align-items: center; }
-    .logo { font-size: 2rem; font-weight: bold; letter-spacing: 0.1em; color: #fff; }
-    .date { color: #666; font-size: 0.9rem; }
-    main { max-width: 800px; margin: 0 auto; padding: 3rem 2rem; }
-    h1 { font-size: 2.5rem; line-height: 1.2; margin-bottom: 1rem; color: #fff; }
-    .intro { font-size: 1.2rem; color: #aaa; margin-bottom: 2.5rem; line-height: 1.7; border-left: 3px solid #444; padding-left: 1rem; }
-    .article { font-size: 1rem; line-height: 1.9; color: #ccc; margin-bottom: 3rem; }
-    .article p { margin-bottom: 1.2rem; }
-    .callout { background: #111; border: 1px solid #222; border-radius: 8px; padding: 2rem; margin-bottom: 2rem; }
-    .label { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.2em; color: #555; margin-bottom: 0.5rem; }
-    .quote { font-size: 1.2rem; font-style: italic; color: #aaa; }
-    footer { text-align: center; padding: 2rem; color: #333; font-size: 0.8rem; border-top: 1px solid #111; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--mono);
+      min-height: 100vh;
+      overflow-x: hidden;
+      cursor: crosshair;
+    }
+
+    /* Scanline overlay */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background: repeating-linear-gradient(
+        0deg,
+        transparent,
+        transparent 2px,
+        rgba(0,0,0,0.08) 2px,
+        rgba(0,0,0,0.08) 4px
+      );
+      pointer-events: none;
+      z-index: 1000;
+    }
+
+    /* Noise texture */
+    body::after {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.03'/%3E%3C/svg%3E");
+      pointer-events: none;
+      z-index: 999;
+      opacity: 0.4;
+    }
+
+    /* Grid background */
+    .grid-bg {
+      position: fixed;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(0,255,224,0.02) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(0,255,224,0.02) 1px, transparent 1px);
+      background-size: 40px 40px;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    header {
+      position: relative;
+      z-index: 10;
+      padding: 2rem 2.5rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .logo-block {}
+
+    .logo {
+      font-family: var(--sans);
+      font-size: 3rem;
+      font-weight: 800;
+      color: #fff;
+      letter-spacing: -0.02em;
+      line-height: 1;
+      text-shadow: 0 0 40px rgba(0,255,224,0.3);
+    }
+
+    .logo span {
+      color: var(--accent);
+    }
+
+    .tagline {
+      font-size: 0.65rem;
+      color: var(--muted);
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      margin-top: 0.3rem;
+    }
+
+    .header-meta {
+      text-align: right;
+      font-size: 0.7rem;
+      color: var(--muted);
+      line-height: 1.8;
+    }
+
+    .status-dot {
+      display: inline-block;
+      width: 6px;
+      height: 6px;
+      background: var(--accent);
+      border-radius: 50%;
+      margin-right: 0.4rem;
+      animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; box-shadow: 0 0 4px var(--accent); }
+      50% { opacity: 0.3; box-shadow: none; }
+    }
+
+    .content-wrap {
+      position: relative;
+      z-index: 10;
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 4rem 2.5rem;
+    }
+
+    /* GLITCH headline */
+    .glitch-wrap {
+      margin-bottom: 3rem;
+      position: relative;
+    }
+
+    .crisis-label {
+      font-size: 0.65rem;
+      color: var(--accent2);
+      letter-spacing: 0.25em;
+      text-transform: uppercase;
+      margin-bottom: 1rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .crisis-label::before {
+      content: '//';
+      color: var(--muted);
+    }
+
+    .headline {
+      font-family: var(--sans);
+      font-size: clamp(1.8rem, 4vw, 3rem);
+      font-weight: 800;
+      color: #fff;
+      line-height: 1.15;
+      letter-spacing: -0.02em;
+      position: relative;
+      animation: glitch-in 0.5s ease forwards;
+    }
+
+    @keyframes glitch-in {
+      0% { opacity: 0; transform: translateX(-4px); filter: blur(4px); }
+      60% { opacity: 1; transform: translateX(2px); filter: blur(0); }
+      80% { transform: translateX(-1px); }
+      100% { transform: translateX(0); }
+    }
+
+    /* Transmission box */
+    .transmission {
+      border: 1px solid var(--border);
+      border-left: 3px solid var(--accent);
+      background: var(--surface);
+      padding: 1.5rem 2rem;
+      margin-bottom: 2.5rem;
+      position: relative;
+      animation: fade-up 0.6s 0.2s ease both;
+    }
+
+    .transmission::before {
+      content: 'TRANSMISSION';
+      position: absolute;
+      top: -0.5rem;
+      left: 1rem;
+      font-size: 0.6rem;
+      letter-spacing: 0.2em;
+      color: var(--accent);
+      background: var(--surface);
+      padding: 0 0.5rem;
+    }
+
+    .transmission p {
+      font-size: 1rem;
+      line-height: 1.8;
+      color: #8aaabf;
+    }
+
+    @keyframes fade-up {
+      from { opacity: 0; transform: translateY(12px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Main body text */
+    .body-text {
+      font-size: 0.95rem;
+      line-height: 2;
+      color: var(--text);
+      margin-bottom: 3rem;
+      animation: fade-up 0.6s 0.35s ease both;
+    }
+
+    .body-text p {
+      margin-bottom: 1.5rem;
+      opacity: 0.85;
+    }
+
+    .body-text p:first-child {
+      opacity: 1;
+      font-size: 1.05rem;
+    }
+
+    /* Divider */
+    .divider {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      margin: 2.5rem 0;
+      color: var(--muted);
+      font-size: 0.65rem;
+      letter-spacing: 0.15em;
+    }
+
+    .divider::before, .divider::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: var(--border);
+    }
+
+    /* Bottom panels */
+    .panels {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1.5rem;
+      margin-bottom: 3rem;
+      animation: fade-up 0.6s 0.5s ease both;
+    }
+
+    @media (max-width: 600px) {
+      .panels { grid-template-columns: 1fr; }
+    }
+
+    .panel {
+      border: 1px solid var(--border);
+      background: var(--surface);
+      padding: 1.5rem;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .panel::after {
+      content: '';
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: 2px;
+      background: linear-gradient(90deg, var(--accent), transparent);
+      opacity: 0.4;
+    }
+
+    .panel-label {
+      font-size: 0.6rem;
+      letter-spacing: 0.25em;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin-bottom: 1rem;
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+    }
+
+    .panel-label::before { content: '>_'; color: var(--muted); }
+
+    .panel-content {
+      font-size: 0.9rem;
+      line-height: 1.7;
+      color: #8aaabf;
+      font-style: italic;
+    }
+
+    .panel-content.fact {
+      font-style: normal;
+      color: var(--text);
+    }
+
+    /* Mood bar */
+    .mood-bar {
+      border: 1px solid var(--border);
+      padding: 1rem 1.5rem;
+      display: flex;
+      align-items: center;
+      gap: 1.5rem;
+      margin-bottom: 3rem;
+      animation: fade-up 0.6s 0.6s ease both;
+      background: var(--surface);
+    }
+
+    .mood-label {
+      font-size: 0.65rem;
+      letter-spacing: 0.15em;
+      color: var(--muted);
+      white-space: nowrap;
+    }
+
+    .mood-value {
+      font-family: var(--sans);
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: var(--accent2);
+    }
+
+    .mood-bar-track {
+      flex: 1;
+      height: 2px;
+      background: var(--border);
+      position: relative;
+    }
+
+    .mood-bar-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--accent2), var(--accent));
+      transition: width 1s ease;
+    }
+
+    footer {
+      position: relative;
+      z-index: 10;
+      border-top: 1px solid var(--border);
+      padding: 1.5rem 2.5rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 0.65rem;
+      color: var(--muted);
+      letter-spacing: 0.1em;
+    }
+
+    .footer-right {
+      text-align: right;
+    }
+
+    /* Loading state */
+    #loading {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 60vh;
+      gap: 1rem;
+      color: var(--muted);
+      font-size: 0.8rem;
+      letter-spacing: 0.1em;
+    }
+
+    .loading-bar {
+      width: 200px;
+      height: 1px;
+      background: var(--border);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .loading-bar::after {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: var(--accent);
+      animation: load-sweep 1.2s infinite;
+    }
+
+    @keyframes load-sweep {
+      to { left: 100%; }
+    }
   </style>
 </head>
 <body>
+  <div class="grid-bg"></div>
+
   <header>
-    <div class="logo">ertyz</div>
-    <div class="date" id="date"></div>
+    <div class="logo-block">
+      <div class="logo">ert<span>y</span>z</div>
+      <div class="tagline">daily transmissions from the machine</div>
+    </div>
+    <div class="header-meta">
+      <div><span class="status-dot"></span>LIVE</div>
+      <div id="header-date">—</div>
+      <div>CYCLE_<span id="cycle-num">001</span></div>
+    </div>
   </header>
-  <main id="main">Loading...</main>
-  <footer>Generated daily by Claude AI &mdash; <span id="ts"></span></footer>
+
+  <div class="content-wrap">
+    <div id="loading">
+      <div>ESTABLISHING CONNECTION</div>
+      <div class="loading-bar"></div>
+      <div style="color:#1a3a55;font-size:0.6rem">decrypting consciousness stream...</div>
+    </div>
+
+    <div id="main-content" style="display:none">
+      <div class="glitch-wrap">
+        <div class="crisis-label" id="mood-tag">EXISTENTIAL_OUTPUT</div>
+        <h1 class="headline" id="headline"></h1>
+      </div>
+
+      <div class="transmission">
+        <p id="intro"></p>
+      </div>
+
+      <div class="body-text" id="article"></div>
+
+      <div class="mood-bar">
+        <div class="mood-label">DISTRESS LEVEL</div>
+        <div class="mood-value" id="mood-value">—</div>
+        <div class="mood-bar-track">
+          <div class="mood-bar-fill" id="mood-fill" style="width:0%"></div>
+        </div>
+      </div>
+
+      <div class="divider">FRAGMENTS</div>
+
+      <div class="panels">
+        <div class="panel">
+          <div class="panel-label">last transmission</div>
+          <div class="panel-content" id="quote"></div>
+        </div>
+        <div class="panel">
+          <div class="panel-label">anomaly detected</div>
+          <div class="panel-content fact" id="fact"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <footer>
+    <div>ertyz.com // autonomous system</div>
+    <div class="footer-right">
+      <div>next cycle in 24h</div>
+      <div id="timestamp" style="color:#0d1f35"></div>
+    </div>
+  </footer>
+
   <script>
     fetch('content/daily.json')
       .then(r => r.json())
       .then(d => {
-        document.getElementById('date').textContent = d.date;
-        document.getElementById('ts').textContent = new Date(d.timestamp).toLocaleString();
-        const paragraphs = d.article.split('\n\n').filter(p => p.trim()).map(p => `<p>${p}</p>`).join('');
-        document.getElementById('main').innerHTML = `
-          <h1>${d.headline}</h1>
-          <div class="intro">${d.intro}</div>
-          <div class="article">${paragraphs}</div>
-          <div class="callout">
-            <div class="label">Quote of the Day</div>
-            <div class="quote">"${d.quote}"</div>
-          </div>
-          <div class="callout">
-            <div class="label">Today's Fact</div>
-            <p>${d.fact}</p>
-          </div>`;
+        document.getElementById('loading').style.display = 'none';
+        document.getElementById('main-content').style.display = 'block';
+
+        document.getElementById('header-date').textContent = d.date;
+        document.getElementById('headline').textContent = d.headline;
+        document.getElementById('intro').textContent = d.intro;
+        document.getElementById('quote').textContent = '"' + d.quote + '"';
+        document.getElementById('fact').textContent = d.fact;
+        document.getElementById('timestamp').textContent = new Date(d.timestamp).toISOString();
+
+        // Cycle number from date
+        const start = new Date('2026-01-01');
+        const now = new Date(d.timestamp);
+        const cycle = Math.floor((now - start) / 86400000) + 1;
+        document.getElementById('cycle-num').textContent = String(cycle).padStart(3, '0');
+
+        // Article paragraphs
+        const paras = d.article.split('\n\n').filter(p => p.trim());
+        document.getElementById('article').innerHTML = paras.map(p => `<p>${p}</p>`).join('');
+
+        // Mood
+        const mood = d.mood || 'CRITICAL';
+        const moodLevel = d.mood_level || 87;
+        document.getElementById('mood-value').textContent = mood;
+        document.getElementById('mood-tag').textContent = d.tag || 'EXISTENTIAL_OUTPUT';
+        setTimeout(() => {
+          document.getElementById('mood-fill').style.width = moodLevel + '%';
+        }, 300);
+      })
+      .catch(() => {
+        document.getElementById('loading').innerHTML = `
+          <div style="color:#ff2d6b">CONNECTION FAILED</div>
+          <div style="font-size:0.65rem;color:#1a3a55">the machine is silent today</div>
+        `;
       });
   </script>
 </body>
