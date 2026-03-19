@@ -638,32 +638,35 @@
     fetch('content/archive/index.json')
       .then(r => r.json())
       .then(dates => {
-        if (!dates || dates.length === 0) return;
+        const filtered = dates.filter(d => d !== 'index');
+        if (!filtered.length) return;
         const list = document.getElementById('drawer-list');
-        list.innerHTML = '';
-        dates.forEach(slug => {
-          fetch(`content/archive/${slug}.json`)
-            .then(r => r.json())
-            .then(d => {
-              const item = document.createElement('div');
-              item.className = 'archive-item';
-              item.dataset.slug = slug;
-              item.innerHTML = `
-                <div class="archive-item-date">${slug}</div>
-                <div class="archive-item-headline">${d.headline}</div>
-                <div class="archive-item-tag">${d.tag || ''}</div>`;
-              item.onclick = () => {
-                document.querySelectorAll('.archive-item').forEach(i => i.classList.remove('active'));
-                item.classList.add('active');
-                renderContent(d, true);
-                closeDrawer();
-                window.scrollTo({ top: 0, behavior: 'smooth' });
-              };
-              list.appendChild(item);
-            });
+        Promise.all(
+          filtered.map(slug =>
+            fetch(`content/archive/${slug}.json`).then(r => r.json()).then(d => ({ slug, d }))
+          )
+        ).then(entries => {
+          entries.sort((a, b) => b.slug.localeCompare(a.slug));
+          list.innerHTML = '';
+          entries.forEach(({ slug, d }) => {
+            const item = document.createElement('div');
+            item.className = 'archive-item';
+            item.innerHTML = `
+              <div class="archive-item-date">${slug}</div>
+              <div class="archive-item-headline">${d.headline}</div>
+              <div class="archive-item-tag">${d.tag || ''}</div>`;
+            item.onclick = () => {
+              document.querySelectorAll('.archive-item').forEach(i => i.classList.remove('active'));
+              item.classList.add('active');
+              renderContent(d, true);
+              closeDrawer();
+              window.scrollTo({ top: 0, behavior: 'smooth' });
+            };
+            list.appendChild(item);
+          });
         });
       })
-      .catch(() => {}); // No archive yet, keep default empty message
+      .catch(() => {});
 
     function openDrawer() {
       document.getElementById('drawer').classList.add('open');
