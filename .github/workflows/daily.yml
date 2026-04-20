@@ -2,7 +2,8 @@ name: Daily Content Generation
 
 on:
   schedule:
-    - cron: '0 6 * * *'
+    - cron: '0 0 * * *'
+      timezone: 'America/Denver'
   workflow_dispatch:
 
 jobs:
